@@ -26,6 +26,7 @@ func main() {
 	routers()
 	log.Fatal(http.ListenAndServe(":8005", routers()))
 }
+
 func init() {
 	router = chi.NewRouter()
 	router.Use(middleware.Recoverer)
@@ -42,7 +43,7 @@ func init() {
 
 func routers() *chi.Mux {
 	router.Get("/posts", returnAllUsers)
-	router.Get("/posts/{id}", DetailPost)
+	router.Get("/getUser", DetailPost)
 	router.Post("/posts", CreatePost)
 	router.Put("/posts/{id}", UpdatePost)
 	router.Delete("/posts/{id}", DeletePost)
@@ -86,7 +87,10 @@ func CreatePost(w http.ResponseWriter, r *http.Request) {
 	var response Response
 
 	json.NewDecoder(r.Body).Decode(&user)
-	log.Println(r.Body)
+	if r.Body != nil {
+		log.Println("ada isinya")
+		fmt.Println(r)
+	}
 	query, err := db.Prepare("Insert person SET first_name=?, last_name=?")
 	if err != nil {
 		log.Println("error : ", err)
@@ -108,14 +112,14 @@ func CreatePost(w http.ResponseWriter, r *http.Request) {
 func UpdatePost(w http.ResponseWriter, r *http.Request) {
 	var user Users
 	var response Response
-	id := chi.URLParam(r, "id")
+	// id := chi.URLParam(r, "id")
 	json.NewDecoder(r.Body).Decode(&user)
 
 	query, err := db.Prepare("Update person set first_name=?, last_name=? where id=?")
 	if err != nil {
 		log.Println("error : ", err)
 	}
-	_, er := query.Exec(user.FirstName, user.LastName, id)
+	_, er := query.Exec(user.FirstName, user.LastName, user.Id)
 
 	if er != nil {
 		log.Println("error : ", er)
@@ -131,24 +135,37 @@ func UpdatePost(w http.ResponseWriter, r *http.Request) {
 
 func DetailPost(w http.ResponseWriter, r *http.Request) {
 	var user Users
+	var arr_user []Users
 	var response Response
-	id := chi.URLParam(r, "id")
+	// id := chi.URLParam(r, "id")
 	json.NewDecoder(r.Body).Decode(&user)
 
 	query, err := db.Prepare("Select id,first_name,last_name from person where id=?")
 	if err != nil {
 		log.Println("error : ", err)
 	}
-	_, er := query.Exec(user.FirstName, user.LastName, id)
+	s, er := query.Exec(user.Id)
 
 	if er != nil {
 		log.Println("error : ", er)
 	}
 	defer query.Close()
 
-	w.Header().Set("Content-Type", "application/json")
+	rows, err := s.RowsAffected()
+	log.Println(rows)
+	// scanErr := rows.Scan(&user.Id, &user.FirstName, &user.LastName)
+	if scanErr != nil {
+		log.Fatal(err.Error())
+
+	} else {
+		arr_user = append(arr_user, user)
+	}
+
 	response.Status = 1
 	response.Message = "Success"
+	response.Data = arr_user
+
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 
 }
