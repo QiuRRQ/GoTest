@@ -140,6 +140,10 @@ func DetailPost(w http.ResponseWriter, r *http.Request) {
 	// id := chi.URLParam(r, "id")
 	json.NewDecoder(r.Body).Decode(&user)
 
+	if r.Body != nil {
+		log.Println("ada isinya")
+		fmt.Println(r)
+	}
 	query, err := db.Prepare("Select id,first_name,last_name from person where id=?")
 	if err != nil {
 		log.Println("error : ", err)
@@ -153,14 +157,8 @@ func DetailPost(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := s.RowsAffected()
 	log.Println(rows)
-	// scanErr := rows.Scan(&user.Id, &user.FirstName, &user.LastName)
-	if scanErr != nil {
-		log.Fatal(err.Error())
 
-	} else {
-		arr_user = append(arr_user, user)
-	}
-
+	arr_user = append(arr_user, user)
 	response.Status = 1
 	response.Message = "Success"
 	response.Data = arr_user
