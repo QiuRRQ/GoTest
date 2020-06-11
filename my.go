@@ -43,9 +43,9 @@ func init() {
 
 func routers() *chi.Mux {
 	router.Get("/posts", returnAllUsers)
-	router.Get("/getUser", DetailPost)
+	router.Get("/getUser/{id}", DetailPost)
 	router.Post("/posts", CreatePost)
-	router.Put("/posts/{id}", UpdatePost)
+	router.Put("/posts", UpdatePost)
 	router.Delete("/posts/{id}", DeletePost)
 
 	return router
@@ -137,28 +137,27 @@ func DetailPost(w http.ResponseWriter, r *http.Request) {
 	var user Users
 	var arr_user []Users
 	var response Response
-	// id := chi.URLParam(r, "id")
+	id := chi.URLParam(r, "id")
 	json.NewDecoder(r.Body).Decode(&user)
 
+	fmt.Println(id)
 	if r.Body != nil {
 		log.Println("ada isinya")
 		fmt.Println(r)
 	}
-	query, err := db.Prepare("Select id,first_name,last_name from person where id=?")
+	rows, err := db.Query("Select id,first_name,last_name from person where id=?", id)
 	if err != nil {
-		log.Println("error : ", err)
+		log.Print(err)
 	}
-	s, er := query.Exec(user.Id)
 
-	if er != nil {
-		log.Println("error : ", er)
+	for rows.Next() {
+		if err := rows.Scan(&user.Id, &user.FirstName, &user.LastName); err != nil {
+			log.Fatal(err.Error())
+
+		} else {
+			arr_user = append(arr_user, user)
+		}
 	}
-	defer query.Close()
-
-	rows, err := s.RowsAffected()
-	log.Println(rows)
-
-	arr_user = append(arr_user, user)
 	response.Status = 1
 	response.Message = "Success"
 	response.Data = arr_user
