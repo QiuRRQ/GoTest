@@ -54,7 +54,6 @@ func routers() *chi.Mux {
 func returnAllUsers(w http.ResponseWriter, r *http.Request) {
 	var users UsersEntity
 	var arr_user []UsersEntity
-	var response UsersResponse
 	var userVM []UsersViewModel
 
 	rows, err := db.Query("Select id,first_name,last_name from person")
@@ -80,18 +79,12 @@ func returnAllUsers(w http.ResponseWriter, r *http.Request) {
 		)
 	}
 
-	response.Status = 1
-	response.Message = "Success"
-	response.Data = userVM //change this from  UserEntity type to UserViewModel type
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
+	RespondWithJSON(w, 200, 200, "success", userVM, nil)
 
 }
 
 func CreatePost(w http.ResponseWriter, r *http.Request) {
 	var user UsersRequest
-	var response UsersResponse
 
 	json.NewDecoder(r.Body).Decode(&user)
 	if r.Body != nil {
@@ -111,16 +104,12 @@ func CreatePost(w http.ResponseWriter, r *http.Request) {
 	}
 	defer query.Close()
 
-	w.Header().Set("Content-Type", "application/json")
-	response.Status = 1
-	response.Message = "Success"
-	json.NewEncoder(w).Encode(response)
+	RespondWithJSON(w, 200, 200, "success", user, nil)
 
 }
 
 func UpdatePost(w http.ResponseWriter, r *http.Request) {
 	var user UsersEntity
-	var response UsersResponse
 	// id := chi.URLParam(r, "id")
 	json.NewDecoder(r.Body).Decode(&user)
 
@@ -135,17 +124,13 @@ func UpdatePost(w http.ResponseWriter, r *http.Request) {
 	}
 	defer query.Close()
 
-	w.Header().Set("Content-Type", "application/json")
-	response.Status = 1
-	response.Message = "Success"
-	json.NewEncoder(w).Encode(response)
+	RespondWithJSON(w, 200, 200, "success", user, nil)
 
 }
 
 func DetailPost(w http.ResponseWriter, r *http.Request) {
 	var user UsersEntity
 	var arr_user []UsersEntity
-	var response UsersRequest
 	id := chi.URLParam(r, "id")
 	json.NewDecoder(r.Body).Decode(&user)
 
@@ -167,12 +152,8 @@ func DetailPost(w http.ResponseWriter, r *http.Request) {
 			arr_user = append(arr_user, user)
 		}
 	}
-	// response.Status = 1
-	// response.Message = "Success"
-	// response.Data = arr_user //change this from  UserEntity type to UserViewModel type
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
+	RespondWithJSON(w, 200, 200, "success", user, nil)
 
 }
 
@@ -196,4 +177,20 @@ func DeletePost(w http.ResponseWriter, r *http.Request) {
 	response.Message = "Success"
 	json.NewEncoder(w).Encode(response)
 
+}
+
+// RespondWithJSON write json response format
+func RespondWithJSON(w http.ResponseWriter, httpCode int, statCode int, message string, payload interface{}, pagination interface{}) {
+	respPayload := map[string]interface{}{
+		"stat_code":  statCode,
+		"stat_msg":   message,
+		"pagination": pagination,
+		"data":       payload,
+	}
+
+	response, _ := json.Marshal(respPayload)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(httpCode)
+	w.Write(response)
 }
