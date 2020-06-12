@@ -52,12 +52,9 @@ func routers() *chi.Mux {
 }
 
 func returnAllUsers(w http.ResponseWriter, r *http.Request) {
-	var users Users
-	var arr_user []Users
-	var response Response
-
-	db := connect()
-	defer db.Close()
+	var users UsersEntity
+	var arr_user []UsersEntity
+	var response UsersResponse
 
 	rows, err := db.Query("Select id,first_name,last_name from person")
 	if err != nil {
@@ -75,7 +72,7 @@ func returnAllUsers(w http.ResponseWriter, r *http.Request) {
 
 	response.Status = 1
 	response.Message = "Success"
-	response.Data = arr_user
+	response.Data = arr_user //change this from  UserEntity type to UserViewModel type
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
@@ -83,8 +80,8 @@ func returnAllUsers(w http.ResponseWriter, r *http.Request) {
 }
 
 func CreatePost(w http.ResponseWriter, r *http.Request) {
-	var user Users
-	var response Response
+	var user UsersEntity
+	var response UsersResponse
 
 	json.NewDecoder(r.Body).Decode(&user)
 	if r.Body != nil {
@@ -110,8 +107,8 @@ func CreatePost(w http.ResponseWriter, r *http.Request) {
 }
 
 func UpdatePost(w http.ResponseWriter, r *http.Request) {
-	var user Users
-	var response Response
+	var user UsersEntity
+	var response UsersResponse
 	// id := chi.URLParam(r, "id")
 	json.NewDecoder(r.Body).Decode(&user)
 
@@ -134,9 +131,9 @@ func UpdatePost(w http.ResponseWriter, r *http.Request) {
 }
 
 func DetailPost(w http.ResponseWriter, r *http.Request) {
-	var user Users
-	var arr_user []Users
-	var response Response
+	var user UsersEntity
+	var arr_user []UsersEntity
+	var response UsersRequest
 	id := chi.URLParam(r, "id")
 	json.NewDecoder(r.Body).Decode(&user)
 
@@ -160,7 +157,7 @@ func DetailPost(w http.ResponseWriter, r *http.Request) {
 	}
 	response.Status = 1
 	response.Message = "Success"
-	response.Data = arr_user
+	response.Data = arr_user //change this from  UserEntity type to UserViewModel type
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
@@ -170,7 +167,7 @@ func DetailPost(w http.ResponseWriter, r *http.Request) {
 // DeletePost remove a spesific post
 func DeletePost(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
-	var response Response
+	var response UsersResponse
 
 	query, err := db.Prepare("delete from person where id=?")
 	if err != nil {
