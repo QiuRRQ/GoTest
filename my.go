@@ -55,6 +55,7 @@ func returnAllUsers(w http.ResponseWriter, r *http.Request) {
 	var users UsersEntity
 	var arr_user []UsersEntity
 	var response UsersResponse
+	var userVM []UsersViewModel
 
 	rows, err := db.Query("Select id,first_name,last_name from person")
 	if err != nil {
@@ -70,9 +71,18 @@ func returnAllUsers(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	for _, r := range arr_user {
+		userVM = append(userVM,
+			UsersViewModel{
+				FirstName: r.FirstName,
+				LastName:  r.LastName,
+			},
+		)
+	}
+
 	response.Status = 1
 	response.Message = "Success"
-	response.Data = arr_user //change this from  UserEntity type to UserViewModel type
+	response.Data = userVM //change this from  UserEntity type to UserViewModel type
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
@@ -80,7 +90,7 @@ func returnAllUsers(w http.ResponseWriter, r *http.Request) {
 }
 
 func CreatePost(w http.ResponseWriter, r *http.Request) {
-	var user UsersEntity
+	var user UsersRequest
 	var response UsersResponse
 
 	json.NewDecoder(r.Body).Decode(&user)
@@ -88,14 +98,16 @@ func CreatePost(w http.ResponseWriter, r *http.Request) {
 		log.Println("ada isinya")
 		fmt.Println(r)
 	}
-	query, err := db.Prepare("Insert person SET first_name=?, last_name=?")
+
+	log.Println(user.FirstName)
+	query, err := db.Prepare("Insert into person(first_name,last_name)  values(?,?)")
 	if err != nil {
 		log.Println("error : ", err)
 	}
 
-	_, er := query.Exec(user.FirstName, user.LastName)
-	if er != nil {
-		log.Println("error : ", er)
+	_, err = query.Exec(user.FirstName, user.LastName)
+	if err != nil {
+		log.Println("error : ", err)
 	}
 	defer query.Close()
 
@@ -155,9 +167,9 @@ func DetailPost(w http.ResponseWriter, r *http.Request) {
 			arr_user = append(arr_user, user)
 		}
 	}
-	response.Status = 1
-	response.Message = "Success"
-	response.Data = arr_user //change this from  UserEntity type to UserViewModel type
+	// response.Status = 1
+	// response.Message = "Success"
+	// response.Data = arr_user //change this from  UserEntity type to UserViewModel type
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)

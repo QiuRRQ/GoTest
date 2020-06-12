@@ -1,9 +1,8 @@
 package main
 
 type UsersRequest struct { //for taking json post request
-	Id        int    `form:"id" json:"id"`
-	FirstName string `form:"firstname" json:"firstname"`
-	LastName  string `form:"lastname" json:"lastname"`
+	FirstName string `form:"firstname" json:"first_name"`
+	LastName  string `form:"lastname" json:"last_name"`
 }
 
 type UsersResponse struct {
@@ -14,12 +13,12 @@ type UsersResponse struct {
 
 type UsersViewModel struct { //for returning fesponse format
 	Id        string `form:"id" json:"id"`
-	FirstName string `form:"firstname" json:"firstname"`
-	LastName  string `form:"lastname" json:"lastname"`
+	FirstName string `form:"firstname" json:"first_name"`
+	LastName  string `form:"lastname" json:"last_name"`
 }
 
 type UsersEntity struct { //for database operational
 	Id        int    `form:"id" json:"id"`
-	FirstName string `form:"firstname" json:"firstname"`
-	LastName  string `form:"lastname" json:"lastname"`
+	FirstName string `form:"firstname" json:"first_name"`
+	LastName  string `form:"lastname" json:"last_name"`
 }
